@@ -4,9 +4,23 @@ import { ButtonGroup, CheckBox } from 'react-native-elements';
 import { Provider, connect } from 'react-redux';
 import { createStore } from 'redux';
 import rootReducer from './reducers.js';
+import { addTodo } from './actions.js';
 
-export default class App extends React.Component {
 
+// const store = createStore(rootReducer);
+// console.log(store);
+
+class App extends React.Component {
+  render() {
+    return (
+      <Provider store={ createStore(rootReducer) }>
+        <Todolist />
+      </Provider>
+    );
+  }
+}
+
+class TodoList extends React.Component {
   constructor() {
     super();
     this.state = {
@@ -15,11 +29,13 @@ export default class App extends React.Component {
   }
 
   addItem = () => { 
-    console.log(this.state.item);
+    // console.log(this.state.item);
+    addTodo(this.state.item);
   }
 
   render() {
-    console.log(this.props.todos);
+    // console.log(">>>>>>> props: ");
+    // console.log(this.props.todo);
     return (
       <View style={styles.container}>
         <ButtonGroup
@@ -33,7 +49,7 @@ export default class App extends React.Component {
           style={styles.textInput}
           onChangeText={ (text) => { 
             this.setState({ item: text }) 
-            console.log(this.state.item);
+            // console.log(this.state.item);
           } }
         />
 
@@ -79,18 +95,21 @@ const styles = StyleSheet.create({
   }
 });
 
-const store = createStore(rootReducer);
-const AppContainer = () =>
-  <Provider store={store}>
-    <App />
-  </Provider>
 
-AppRegistry.registerComponent('AppContainer', () => AppContainer);
 
-// function mapStateToProps(state) {
-//   return { 
-//     todos: state.todos, 
-//     visibilityFilter: state.visibilityFilter 
-//   }
-// }
-// connect(mapStateToProps, null)(AppContainer);
+// const AppContainer = () =>
+//   <Provider store={store}>
+//     <App />
+//   </Provider>
+
+// AppRegistry.registerComponent('App', () => App);
+
+
+
+function mapStateToProps(state) {
+  return { 
+    todos: state.todos, 
+    visibilityFilter: state.visibilityFilter 
+  }
+}
+export default connect(mapStateToProps, null)(TodoList);
