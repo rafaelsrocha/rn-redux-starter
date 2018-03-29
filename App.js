@@ -6,15 +6,11 @@ import { createStore } from 'redux';
 import rootReducer from './reducers.js';
 import { addTodo } from './actions.js';
 
-
-// const store = createStore(rootReducer);
-// console.log(store);
-
-class App extends React.Component {
+export default class App extends React.Component {
   render() {
     return (
       <Provider store={ createStore(rootReducer) }>
-        <Todolist />
+        <ConnectedTodoList />
       </Provider>
     );
   }
@@ -95,21 +91,10 @@ const styles = StyleSheet.create({
   }
 });
 
-
-
-// const AppContainer = () =>
-//   <Provider store={store}>
-//     <App />
-//   </Provider>
-
-// AppRegistry.registerComponent('App', () => App);
-
-
-
 function mapStateToProps(state) {
   return { 
     todos: state.todos, 
     visibilityFilter: state.visibilityFilter 
   }
 }
-export default connect(mapStateToProps, null)(TodoList);
+const ConnectedTodoList = connect(mapStateToProps, null)(TodoList);
