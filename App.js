@@ -1,10 +1,10 @@
 import React from 'react';
-import { AppRegistry, StyleSheet, View, Text, TextInput, Button } from 'react-native';
+import { AppRegistry, StyleSheet, View, Text, TextInput, Button, FlatList } from 'react-native';
 import { ButtonGroup, CheckBox } from 'react-native-elements';
 import { Provider, connect } from 'react-redux';
 import { createStore } from 'redux';
 import rootReducer from './reducers.js';
-import { addTodo } from './actions.js';
+import { addTodo, toggleTodo } from './actions.js';
 
 export default class App extends React.Component {
   render() {
@@ -25,13 +25,14 @@ class TodoList extends React.Component {
   }
 
   addItem = () => { 
-    // console.log(this.state.item);
-    addTodo(this.state.item);
+    this.props.addTodo(this.state.item);
+  }
+
+  toggleItem = (item) => { 
+    this.props.toggleTodo(item.id);
   }
 
   render() {
-    // console.log(">>>>>>> props: ");
-    // console.log(this.props.todo);
     return (
       <View style={styles.container}>
         <ButtonGroup
@@ -44,30 +45,30 @@ class TodoList extends React.Component {
         <TextInput 
           style={styles.textInput}
           onChangeText={ (text) => { 
-            this.setState({ item: text }) 
-            // console.log(this.state.item);
+            this.setState({ item: text })
           } }
         />
 
         <Button 
-          style={styles.button}
+          style={ styles.button }
           title='Add'
-          onPress={this.addItem}
+          onPress={ this.addItem }
         />
 
-        <View style={styles.container}>
-          <CheckBox
-            title='Click Here'
-            checked={true}
-          />
-          <CheckBox
-            title='Click Here'
-            checked={false}
-          />
-          <CheckBox
-            title='Click Here'
-            checked={true}
-          />
+        <View style={ styles.container }>
+        
+        <FlatList
+          data={ this.props.todos }
+          renderItem={ ({ item })  => (
+            <CheckBox
+              key={ item.id }
+              title={ item.text }
+              checked={ item.completed }
+              onPress={ this.toggleItem }
+            />
+          )}
+          keyExtractor={ item => item.id }
+        />
         </View>
       </View>
     );
@@ -97,4 +98,4 @@ function mapStateToProps(state) {
     visibilityFilter: state.visibilityFilter 
   }
 }
-const ConnectedTodoList = connect(mapStateToProps, null)(TodoList);
+const ConnectedTodoList = connect(mapStateToProps, { addTodo, toggleTodo })(TodoList);
