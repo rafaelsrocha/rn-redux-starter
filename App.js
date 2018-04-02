@@ -4,7 +4,7 @@ import { ButtonGroup, CheckBox } from 'react-native-elements';
 import { Provider, connect } from 'react-redux';
 import { createStore } from 'redux';
 import rootReducer from './reducers.js';
-import { addTodo, toggleTodo } from './actions.js';
+import { addTodo, toggleTodo, setVisibilityFilter } from './actions.js';
 
 export default class App extends React.Component {
   render() {
@@ -20,33 +20,52 @@ class TodoList extends React.Component {
   constructor() {
     super();
     this.state = {
-      item: ' ',
+      item: '',
+      selectedFilter: 0
     };
   }
 
   addItem = () => { 
     this.props.addTodo(this.state.item);
+    this.setState({ item: '' })
+    this._textInput.setNativeProps({ text: '' });
   }
 
   toggleItem = (item) => { 
     this.props.toggleTodo(item.id);
   }
 
+  selectIndex = (index) => {
+    this.setState({ selectedFilter: index });
+
+    let visibilityFilter = 'SHOW_ALL'
+    switch (index) {
+      case 1:
+        visibilityFilter = 'SHOW_COMPLETED'
+        break
+      case 2:
+        visibilityFilter = 'SHOW_ACTIVE'
+        break
+      case 0:
+      default:
+    }
+    this.props.setVisibilityFilter(visibilityFilter);
+  }
+
   render() {
     return (
       <View style={styles.container}>
         <ButtonGroup
-          onPress={undefined}
-          selectedIndex={undefined}
-          buttons={['All', 'Done', 'To Do']}
-          containerStyle={{height: 30}}
+          onPress={ this.selectIndex }
+          selectedIndex={ this.state.selectedFilter }
+          buttons={ ['All', 'Done', 'To Do'] }
+          containerStyle={ {height: 30} }
         />
 
         <TextInput 
-          style={styles.textInput}
-          onChangeText={ (text) => { 
-            this.setState({ item: text })
-          } }
+          ref={ component => this._textInput = component }
+          style={ styles.textInput }
+          onChangeText={ (text) => { this.setState({ item: text }) } }
         />
 
         <Button 
@@ -64,7 +83,7 @@ class TodoList extends React.Component {
               key={ item.id }
               title={ item.text }
               checked={ item.completed }
-              onPress={ this.toggleItem }
+              onPress={ () => this.toggleItem(item) }
             />
           )}
           keyExtractor={ item => item.id }
@@ -92,10 +111,20 @@ const styles = StyleSheet.create({
   }
 });
 
-function mapStateToProps(state) {
-  return { 
-    todos: state.todos, 
-    visibilityFilter: state.visibilityFilter 
+const getVisibleTodos = (todos, filter) => {
+  switch (filter) {
+    case 'SHOW_COMPLETED':
+      return todos.filter(t => t.completed)
+    case 'SHOW_ACTIVE':
+      return todos.filter(t => !t.completed)
+    case 'SHOW_ALL':
+    default:
+      return todos
   }
 }
-const ConnectedTodoList = connect(mapStateToProps, { addTodo, toggleTodo })(TodoList);
+
+const mapStateToProps = state => ({
+  todos: getVisibleTodos(state.todos, state.visibilityFilter),
+  visibilityFilter: state.visibilityFilter 
+})
+const ConnectedTodoList = connect(mapStateToProps, { addTodo, toggleTodo, setVisibilityFilter })(TodoList);
